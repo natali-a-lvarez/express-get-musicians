@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const { Musician } = require("../models/index");
 const { db } = require("../db/connection");
+const { check, validationResult } = require("express-validator");
 
 const port = 3000;
 
@@ -18,10 +19,26 @@ app.get("/musicians/:id", async (req, res) => {
   res.json(muscician);
 });
 
-app.post("/musicians", async (req, res) => {
-  const newMusician = await Musician.create({ ...req.body });
-  res.json(newMusician);
-});
+app.post(
+  "/musicians",
+  [
+    check("name").not().isEmpty().trim(),
+    check("instrument").not().isEmpty().trim(),
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.json({ error: errors.array() });
+      } else {
+        const newMusician = await Musician.create({ ...req.body });
+        res.json(newMusician);
+      }
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 app.put("/musicians/:id", async (req, res) => {
   const updatedMusician = await Musician.update(req.body, {

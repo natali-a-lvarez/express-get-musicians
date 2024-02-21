@@ -64,6 +64,44 @@ describe("tests for /muscicians", () => {
     );
   });
 
+  test("POST returns error obj when name field is empty", async () => {
+    const response = await request(app).post("/musicians").send({
+      name: "",
+      instrument: "test",
+    });
+
+    expect(response.body.error).toEqual(
+      expect.arrayContaining([
+        {
+          type: "field",
+          value: "",
+          msg: "Invalid value",
+          path: "name",
+          location: "body",
+        },
+      ])
+    );
+  });
+
+  test("POST returns error obj when instrument field is empty", async () => {
+    const response = await request(app).post("/musicians").send({
+      name: "test",
+      instrument: "",
+    });
+
+    expect(response.body.error).toEqual(
+      expect.arrayContaining([
+        {
+          type: "field",
+          value: "",
+          msg: "Invalid value",
+          path: "instrument",
+          location: "body",
+        },
+      ])
+    );
+  });
+
   test("PUT /muscicians/:id", async () => {
     const response = await request(app)
       .put("/musicians/1")
