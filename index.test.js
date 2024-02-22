@@ -2,7 +2,9 @@ const request = require("supertest");
 const app = require("./src/app");
 const syncSeed = require("./seed");
 const Musician = require("./models/Musician");
+const Band = require("./models/Band");
 let musQuantity;
+let bandQuantity;
 
 const { describe, test, expect, beforeAll } = require("@jest/globals");
 
@@ -10,9 +12,12 @@ const { describe, test, expect, beforeAll } = require("@jest/globals");
 beforeAll(async () => {
   await syncSeed();
   const muscicians = await Musician.findAll({});
+  const bands = await Band.findAll({});
   musQuantity = muscicians.length;
+  bandQuantity = bands.length;
 });
 
+//MUSICIANS
 describe("tests for /muscicians", () => {
   test("GET /muscicians returns 200 status code", async () => {
     const response = await request(app).get("/musicians");
@@ -118,5 +123,33 @@ describe("tests for /muscicians", () => {
     const muscicians = await Musician.findAll({});
     expect(muscicians).toHaveLength(musQuantity);
     expect(muscicians[0].id).not.toEqual(1);
+  });
+});
+
+//BANDS
+describe("tests for /bands", () => {
+  test("GET /muscicians returns 200 status code", async () => {
+    const response = await request(app).get("/bands");
+    expect(response.statusCode).toBe(200);
+  });
+
+  test("GET /muscicians returns correct length of muscicians", async () => {
+    const response = await request(app).get("/bands");
+    expect(response.body).toHaveLength(bandQuantity);
+  });
+
+  test("GET /muscicians returns array muscicians", async () => {
+    const response = await request(app).get("/bands");
+    expect(Array.isArray(response.body)).toBeTruthy();
+    expect(response.body[0]).toHaveProperty("genre");
+  });
+
+  test("GET /muscicians returns correct muscicians data", async () => {
+    const response = await request(app).get("/bands");
+    expect(response.body).toContainEqual(
+      expect.objectContaining({
+        name: "The Beatles",
+      })
+    );
   });
 });
