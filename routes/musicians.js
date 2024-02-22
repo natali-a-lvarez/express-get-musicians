@@ -16,8 +16,8 @@ musicianRouter.get("/:id", async (req, res) => {
 musicianRouter.post(
   "/",
   [
-    check("name").not().isEmpty().trim(),
-    check("instrument").not().isEmpty().trim(),
+    check("name").not().isEmpty().trim().isLength({ min: 2, max: 20 }),
+    check("instrument").not().isEmpty().trim().isLength({ min: 2, max: 20 }),
   ],
   async (req, res, next) => {
     try {
@@ -34,12 +34,28 @@ musicianRouter.post(
   }
 );
 
-musicianRouter.put("/:id", async (req, res) => {
-  const updatedMusician = await Musician.update(req.body, {
-    where: { id: req.params.id },
-  });
-  res.json(updatedMusician);
-});
+musicianRouter.put(
+  "/:id",
+  [
+    check("name").not().isEmpty().trim().isLength({ min: 2, max: 20 }),
+    check("instrument").not().isEmpty().trim().isLength({ min: 2, max: 20 }),
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.json({ error: errors.array() });
+      } else {
+        const updatedMusician = await Musician.update(req.body, {
+          where: { id: req.params.id },
+        });
+        res.json(updatedMusician);
+      }
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 musicianRouter.delete("/:id", async (req, res) => {
   const deletedMusician = await Musician.destroy({
